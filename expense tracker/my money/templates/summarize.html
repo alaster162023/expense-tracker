@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Summary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-100 py-8">
+    <div class="container mx-auto max-w-4xl px-4">
+        <h1 class="mb-6 text-3xl font-bold text-gray-800">Expense Summary</h1>
+        {% if expenses %}
+            <div class="overflow-x-auto rounded-lg bg-white shadow">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for item in expenses %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="whitespace-nowrap px-6 py-4">{{ item.category_name }}</td>
+                                <td class="whitespace-nowrap px-6 py-4 {% if item.amount >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                    ${{ "%.2f"|format(item.amount|abs) }}
+                                </td>
+                                <td class="whitespace-nowrap px-6 py-4">{% if item.amount >= 0 %}Income{% else %}Expense{% endif %}</td>
+                                <td class="whitespace-nowrap px-6 py-4">{{ item.date.strftime('%Y-%m-%d') }}</td>
+                                <td class="whitespace-nowrap px-6 py-4">
+                                    <form action="{{ url_for('delete_expense', expense_id=item.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this expense?');">
+                                        <button type="submit" class="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-md px-2 py-1">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% if item.description and item.description != 'No description' %}
+                                <tr>
+                                    <td colspan="5" class="px-6 py-2 text-sm text-gray-600 bg-gray-50">
+                                        Description: {{ item.description }}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="rounded-lg bg-white p-6 text-center shadow">
+                <p class="text-gray-600">No expenses found. Please add some expenses to see them here.</p>
+            </div>
+        {% endif %}
+        <div class="mt-6">
+            <a href="{{ url_for('home') }}" class="rounded bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="fixed bottom-4 right-4 z-50">
+                {% for message in messages %}
+                    <div class="mb-2 rounded-md bg-green-100 p-4 text-green-700 shadow-md">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <script>
+        // Remove flash messages after 5 seconds
+        setTimeout(() => {
+            const flashMessages = document.querySelectorAll('.bg-green-100');
+            flashMessages.forEach(message => {
+                message.style.transition = 'opacity 0.5s';
+                message.style.opacity = '0';
+                setTimeout(() => message.remove(), 500);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
